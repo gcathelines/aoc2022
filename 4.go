@@ -40,6 +40,16 @@ func main() {
 			continue
 		}
 
+		if b2 >= a1 && b2 <= a2 {
+			count2++
+			continue
+		}
+
+		if a2 >= b1 && a2 <= b2 {
+			count2++
+			continue
+		}
+
 	}
 
 	if err := scanner.Err(); err != nil {
