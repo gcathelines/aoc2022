@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("./4.txt")
+	file, err := os.Open("./1-test.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -18,7 +18,7 @@ func main() {
 	for scanner.Scan() {
 		txt := scanner.Text()
 
-		if _, err := fmt.Sscanf(txt, "%d-%d,%d-%d", &a1, &a2, &b1, &b2); err != nil {
+		if _, err := fmt.Sscanf(txt, "%d", &a); err != nil {
 			fmt.Println("error", err)
 		}
 
