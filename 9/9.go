@@ -3,20 +3,22 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 )
 
-var mp = map[string]int{
-	"0:0": 1,
-}
+var mp = map[string]int{}
 
 func key(i, j int) string {
 	return fmt.Sprintf("%d:%d", i, j)
 }
 
-var max = -1
+const max = 35
 
-var dragon = [][]int{}
+var rope = [][]int{}
+
+// adjust here
+const ropeLen = 2
 
 func main() {
 	file, err := os.Open("./9.txt")
@@ -27,12 +29,12 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 
-	head := []int{0, 0}
-	tail := []int{0, 0}
+	for i := 0; i < ropeLen; i++ {
+		rope = append(rope, []int{10, 10})
+	}
 
 	for scanner.Scan() {
 		txt := scanner.Text()
-
 		var dir string
 		var count int
 
@@ -40,10 +42,10 @@ func main() {
 			fmt.Println("error", err)
 		}
 
-		head, tail = move(dir, count, head, tail)
+		move(dir, count, rope[0])
 	}
 
-	fmt.Println("No 1:", len(mp))
+	fmt.Println("Ans:", len(mp))
 
 	if err := scanner.Err(); err != nil {
 		panic(err)
@@ -51,40 +53,79 @@ func main() {
 
 }
 
-func move(dir string, count int, head []int, tail []int) ([]int, []int) {
-	prevHead := make([]int, 2)
-	copy(prevHead, head)
+func move(dir string, count int, head []int) {
 	for count > 0 {
 		switch dir {
 		case "U":
-			head[1] += 1
-		case "D":
-			head[1] -= 1
-		case "L":
 			head[0] -= 1
-		case "R":
+		case "D":
 			head[0] += 1
+		case "L":
+			head[1] -= 1
+		case "R":
+			head[1] += 1
 		}
 
-		if !isTouch(head, tail) {
-			copy(tail, prevHead)
-			mp[key(tail[0], tail[1])]++
+		for idx := range rope {
+			if idx == len(rope)-1 {
+				mp[key(rope[idx][0], rope[idx][1])]++
+				continue
+			}
+
+			x, y := delta(rope[idx], rope[idx+1])
+			if x < -1 || x > 1 || y < -1 || y > 1 {
+				a := float64(rope[idx][0]+rope[idx+1][0]) / float64(2)
+				b := float64(rope[idx][1]+rope[idx+1][1]) / float64(2)
+				if a == 0 {
+					rope[idx+1][0] = 0
+				}
+				if x > 0 {
+					rope[idx+1][0] = int(math.Ceil(a))
+				}
+				if x < 0 {
+					rope[idx+1][0] = int(math.Floor(a))
+				}
+
+				if b == 0 {
+					rope[idx+1][1] = 0
+				}
+				if y > 0 {
+					rope[idx+1][1] = int(math.Ceil(b))
+				}
+				if y < 0 {
+					rope[idx+1][1] = int(math.Floor(b))
+				}
+			}
 		}
-		copy(prevHead, head)
+
+		// simulation
+		// for i := 0; i < max; i++ {
+		// 	for j := 0; j < max; j++ {
+		// 		var found bool
+		// 		for _, v := range rope {
+		// 			if v[0]+10 == i && v[1]+10 == j {
+		// 				found = true
+		// 				break
+		// 			}
+		// 		}
+		// 		if found {
+		// 			fmt.Print("X")
+		// 		} else {
+		// 			if i-10 == 0 && j-10 == 0 {
+		// 				fmt.Print("s")
+		// 			} else {
+		// 				fmt.Print(".")
+		// 			}
+		// 		}
+		// 	}
+		// 	fmt.Println()
+		// }
 		count--
 	}
-
-	return head, tail
 }
 
-func isTouch(head []int, tail []int) bool {
+func delta(head []int, tail []int) (int, int) {
 	x := head[0] - tail[0]
 	y := head[1] - tail[1]
-	if x > 1 || x < -1 {
-		return false
-	}
-	if y > 1 || y < -1 {
-		return false
-	}
-	return true
+	return x, y
 }
